@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/firebase_options.dart';
+import 'package:mynotes/views/login_view.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -34,11 +35,13 @@ class _RegisterViewState extends State<RegisterView> {
         backgroundColor: Colors.blue,
         title: const Text('Register'),
       ),
+      // initialise firebase
       body: FutureBuilder(
         future: Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
         ),
         builder: (context, snapshot) {
+          //check if firebase is online
           switch (snapshot.connectionState) {
             case ConnectionState.done:
               return Column(
@@ -96,10 +99,10 @@ class _RegisterViewState extends State<RegisterView> {
                           } else if (e.code == 'invalid-email') {
                             print('Invalid email address.');
                           } else {
-                            print('some error occured.');
+                            print('some error occurred.');
                             print(e.code);
                           }
-                        }
+                        }                        
                       },
                       child: const Padding(
                         padding: EdgeInsets.all(8.0),
@@ -109,6 +112,13 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     ),
                   ),
+
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/login/', (route) => false);
+                      },
+                      child: const Text('Already registered? Login here!'))
                 ],
               );
 
