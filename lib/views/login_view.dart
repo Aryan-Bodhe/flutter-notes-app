@@ -86,12 +86,15 @@ class _LoginViewState extends State<LoginView> {
                                   email: email, password: password);
                           print(userCredentials);
                         } on FirebaseAuthException catch (e) {
-                          if(e.code == 'user-not-found') {
+                          if (e.code == 'user-not-found') {
                             print('User not Found');
-                          } else if (e.code == 'wrong-password'){
+                          } else if (e.code == 'wrong-password') {
                             print('Incorrect Password');
                           }
-                          
+                          if (context.mounted) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/notes/', (route) => false);
+                          }
                         }
                       },
                       child: const Padding(
@@ -105,7 +108,8 @@ class _LoginViewState extends State<LoginView> {
 
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pushNamedAndRemoveUntil('/register/', (route) => false);
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/register/', (route) => false);
                     },
                     child: const Text('Not registered yet? Register now!'),
                   )

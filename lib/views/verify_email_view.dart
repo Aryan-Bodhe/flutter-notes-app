@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+//import 'package:mynotes/views/login_view.dart';
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
@@ -29,7 +30,17 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
               child: TextButton(
                 onPressed: () async {
                   final user = FirebaseAuth.instance.currentUser;
-                  await user?.sendEmailVerification();
+                  try {
+                    await user?.sendEmailVerification();
+                    const SnackBar(
+                      content: Text('Verification Email Sent'),
+                    );
+                    await user?.reload();
+                  } on Exception {
+                    const SnackBar(
+                        content: Text(
+                            'Error sending verification email. Please check your email ID.'));
+                  }
                 },
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),
