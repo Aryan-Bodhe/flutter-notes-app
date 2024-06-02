@@ -3,7 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/firebase_options.dart';
-import 'dart:developer' as devtools show log;
+
+import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -83,19 +84,30 @@ class _LoginViewState extends State<LoginView> {
                         final email = emailController.text;
                         final password = passwordController.text;
                         try {
-                          final userCredentials = await FirebaseAuth.instance
+                          await FirebaseAuth.instance
                               .signInWithEmailAndPassword(
-                                  email: email, password: password);
-                          devtools.log(userCredentials.toString());
-                        } on FirebaseAuthException catch (e) {
-                          if (e.code == 'user-not-found') {
-                            devtools.log('User not Found');
-                          } else if (e.code == 'wrong-password') {
-                            devtools.log('Incorrect Password');
-                          }
+                            email: email,
+                            password: password,
+                            
+                          );                          
                           if (context.mounted) {
                             Navigator.of(context).pushNamedAndRemoveUntil(
                                 notesRoute, (route) => false);
+                          }
+                        } on FirebaseAuthException catch (e) {
+                          if (e.code == 'user-not-found') {
+                            if (context.mounted) {
+                              showErrorDialog(context,
+                                  'User Not Found. Try creating an account first.');
+                            }
+                          } else if (e.code == 'wrong-password') {
+                            if (context.mounted) {
+                              showErrorDialog(context, 'Wrong Credentials.');
+                            } else {
+                              if (context.mounted) {
+                                showErrorDialog(context, 'Error: ${e.code}');
+                              }
+                            }
                           }
                         }
                       },

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/firebase_options.dart';
 import 'dart:developer' as devtools show log;
+import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -68,7 +69,8 @@ class _RegisterViewState extends State<RegisterView> {
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
                       decoration: const InputDecoration(
-                          hintText: 'Enter password here.'),
+                        hintText: 'Enter password here.',
+                      ),
                       obscureText: true,
                       autocorrect: false,
                       enableSuggestions: false,
@@ -86,24 +88,47 @@ class _RegisterViewState extends State<RegisterView> {
                         final password = passwordController.text;
 
                         try {
-                          final userCredentials = await FirebaseAuth.instance
-                              .createUserWithEmailAndPassword(
+                          final userCredentials = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                             email: email,
                             password: password,
                           );
+                          await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+                          if (context.mounted) {
+                            Navigator.of(context).pushNamed(verifyEmailRoute);
+                          }
                           devtools.log(userCredentials.toString());
                         } on FirebaseAuthException catch (e) {
                           if (e.code == 'weak-password') {
-                            devtools.log('Weak Password.');
+                            if (context.mounted) {
+                              showErrorDialog(
+                                context,
+                                'Weak Password. Minimum password length required is 6 characters.',
+                              );
+                            }
                           } else if (e.code == 'email-already-in-use') {
-                            devtools.log('Email is already in use.');
+                            if (context.mounted) {
+                              showErrorDialog(
+                                context,
+                                'Email is already in use.',
+                              );
+                            }
                           } else if (e.code == 'invalid-email') {
-                            devtools.log('Invalid email address.');
+                            if (context.mounted) {
+                              showErrorDialog(
+                                context,
+                                'Email address is invalid.',
+                              );
+                            }
                           } else {
-                            devtools.log('some error occurred.');
+                            if (context.mounted) {
+                              showErrorDialog(
+                                context,
+                                'Some error occurred. Please try again.',
+                              );
+                            }
                             devtools.log(e.code);
                           }
-                        }                        
+                        }
                       },
                       child: const Padding(
                         padding: EdgeInsets.all(8.0),
@@ -120,11 +145,11 @@ class _RegisterViewState extends State<RegisterView> {
                             loginRoute, (route) => false);
                       },
                       child: const Text('Already registered? Login here!'))
-                ],
+                ], 
               );
 
             default:
-              return const Text("Loading...");
+              return const CircularProgressIndicator();
           }
         },
       ),

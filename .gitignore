@@ -9,7 +9,7 @@
 .history
 .svn/
 migrate_working_dir/
-lib\views\success_view.dart
+lib/views/success_view.dart
 
 # IntelliJ related
 *.iml

@@ -1,5 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mynotes/constants/routes.dart';
+import 'dart:developer' as devtools show log;
+
+import 'package:mynotes/utilities/show_error_dialog.dart';
 //import 'package:mynotes/views/login_view.dart';
 
 class VerifyEmailView extends StatefulWidget {
@@ -10,6 +14,7 @@ class VerifyEmailView extends StatefulWidget {
 }
 
 class _VerifyEmailViewState extends State<VerifyEmailView> {
+  final userEmail = FirebaseAuth.instance.currentUser?.email;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,10 +25,12 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
       body: Center(
         child: Column(
           children: [
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Please verify your email address.'),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Verification email sent to : $userEmail',
+                ),
               ),
             ),
             Center(
@@ -35,18 +42,33 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                     const SnackBar(
                       content: Text('Verification Email Sent'),
                     );
-                    await user?.reload();
                   } on Exception {
-                    const SnackBar(
-                        content: Text(
-                            'Error sending verification email. Please check your email ID.'));
+                    if (context.mounted) {
+                      showErrorDialog(
+                          context, 'Some error occurred. Please try again.');
+                    }
                   }
                 },
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('Send verification email'),
+                  child: Text('Not received yet? Resend email.'),
                 ),
               ),
+            ),
+            Center(
+              child: TextButton(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    if (context.mounted) {
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        registerRoute,
+                        (route) => false,
+                      );
+                    }
+                  },
+                  child: const Text(
+                    'Restart',
+                  )),
             )
           ],
         ),
