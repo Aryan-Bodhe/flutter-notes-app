@@ -1,9 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
-import 'package:mynotes/firebase_options.dart';
-import 'dart:developer' as devtools show log;
+import 'package:mynotes/services/auth/auth_exceptions.dart';
+import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
@@ -39,9 +37,7 @@ class _RegisterViewState extends State<RegisterView> {
       ),
       // initialise firebase
       body: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
+        future: AuthService.firebase().initialise(),
         builder: (context, snapshot) {
           //check if firebase is online
           switch (snapshot.connectionState) {
@@ -88,47 +84,41 @@ class _RegisterViewState extends State<RegisterView> {
                         final password = passwordController.text;
 
                         try {
-                          final userCredentials = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                            email: email,
-                            password: password,
-                          );
-                          await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+                          await AuthService.firebase().createUser(email: email, password: password);
+                          await AuthService.firebase().sendEmailVerification();
                           if (context.mounted) {
                             Navigator.of(context).pushNamed(verifyEmailRoute);
                           }
-                          devtools.log(userCredentials.toString());
-                        } on FirebaseAuthException catch (e) {
-                          if (e.code == 'weak-password') {
+                        } on WeakPasswordAuthException {                          
                             if (context.mounted) {
                               showErrorDialog(
                                 context,
                                 'Weak Password. Minimum password length required is 6 characters.',
                               );
                             }
-                          } else if (e.code == 'email-already-in-use') {
+                        }
+                        on EmailAlreadyInUseAuthException {
                             if (context.mounted) {
                               showErrorDialog(
                                 context,
                                 'Email is already in use.',
                               );
                             }
-                          } else if (e.code == 'invalid-email') {
+                        } on InvalidEmailAuthException {
                             if (context.mounted) {
                               showErrorDialog(
                                 context,
                                 'Email address is invalid.',
                               );
                             }
-                          } else {
+                        } on GenericAuthException {
                             if (context.mounted) {
                               showErrorDialog(
                                 context,
-                                'Some error occurred. Please try again.',
+                                'Registration error. Please try again.',
                               );
                             }
-                            devtools.log(e.code);
                           }
-                        }
                       },
                       child: const Padding(
                         padding: EdgeInsets.all(8.0),

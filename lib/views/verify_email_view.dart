@@ -1,10 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
-import 'dart:developer' as devtools show log;
-
+import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/utilities/show_error_dialog.dart';
-//import 'package:mynotes/views/login_view.dart';
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
@@ -14,7 +11,7 @@ class VerifyEmailView extends StatefulWidget {
 }
 
 class _VerifyEmailViewState extends State<VerifyEmailView> {
-  final userEmail = FirebaseAuth.instance.currentUser?.email;
+  final userEmail = AuthService.firebase().currentUser;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,23 +22,25 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
       body: Center(
         child: Column(
           children: [
-            Center(
+            const Center(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(8.0),
                 child: Text(
-                  'Verification email sent to : $userEmail',
+                  'Verification email sent. Please check your provided email ID.',
                 ),
               ),
             ),
             Center(
               child: TextButton(
                 onPressed: () async {
-                  final user = FirebaseAuth.instance.currentUser;
                   try {
-                    await user?.sendEmailVerification();
-                    const SnackBar(
+                    await AuthService.firebase().sendEmailVerification();
+                    const snackBar = SnackBar(
                       content: Text('Verification Email Sent'),
                     );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    }
                   } on Exception {
                     if (context.mounted) {
                       showErrorDialog(
@@ -58,7 +57,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             Center(
               child: TextButton(
                   onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
+                    await AuthService.firebase().logOut();
                     if (context.mounted) {
                       Navigator.of(context).pushNamedAndRemoveUntil(
                         loginRoute,
@@ -67,7 +66,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                     }
                   },
                   child: const Text(
-                    'Return to Home',
+                    'Return to Login',
                   )),
             )
           ],
