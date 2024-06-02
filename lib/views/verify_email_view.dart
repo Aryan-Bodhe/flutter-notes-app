@@ -61,13 +61,13 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                     await FirebaseAuth.instance.signOut();
                     if (context.mounted) {
                       Navigator.of(context).pushNamedAndRemoveUntil(
-                        registerRoute,
+                        loginRoute,
                         (route) => false,
                       );
                     }
                   },
                   child: const Text(
-                    'Restart',
+                    'Return to Home',
                   )),
             )
           ],
