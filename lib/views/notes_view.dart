@@ -17,7 +17,7 @@ class _NotesViewState extends State<NotesView> {
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text('Notes'),
-        actions: [
+        actions: [          
           PopupMenuButton<MenuActions>(
             onSelected: (value) async {
               switch (value) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
-import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
@@ -32,21 +31,14 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             ),
             Center(
               child: TextButton(
-                onPressed: () async {
-                  try {
+                onPressed: () async {                  
                     await AuthService.firebase().sendEmailVerification();
                     const snackBar = SnackBar(
                       content: Text('Verification Email Sent'),
                     );
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }
-                  } on Exception {
-                    if (context.mounted) {
-                      showErrorDialog(
-                          context, 'Some error occurred. Please try again.');
-                    }
-                  }
+                    }                  
                 },
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),

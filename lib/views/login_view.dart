@@ -1,3 +1,4 @@
+import 'dart:developer' as devtools show log;
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
@@ -11,20 +12,20 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  late final TextEditingController emailController;
-  late final TextEditingController passwordController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
 
   @override
   void initState() {
-    emailController = TextEditingController();
-    passwordController = TextEditingController();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
     super.initState();
   }
 
   @override
   void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -35,12 +36,7 @@ class _LoginViewState extends State<LoginView> {
         backgroundColor: Colors.blue,
         title: const Text('Login'),
       ),
-      body: FutureBuilder(
-        future: AuthService.firebase().initialise(),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              return Column(
+      body: Column(
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -48,12 +44,12 @@ class _LoginViewState extends State<LoginView> {
                     // Textfield for email
                     //
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Enter email here.'),
-                      controller: emailController,
-                      autocorrect: false,
-                      enableSuggestions: false,
+                      controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      decoration:
+                          const InputDecoration(hintText: 'Enter email here.',),
                     ),
                   ),
                   //
@@ -62,74 +58,74 @@ class _LoginViewState extends State<LoginView> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      decoration: const InputDecoration(
-                          hintText: 'Enter password here.'),
                       obscureText: true,
                       autocorrect: false,
                       enableSuggestions: false,
-                      controller: passwordController,
+                      controller: _passwordController,
+                      decoration: const InputDecoration(
+                          hintText: 'Enter password here.'),
                     ),
                   ),
                   //
                   // registering button
                   //
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final email = emailController.text;
-                        final password = passwordController.text;
-                        try {
-                          await AuthService.firebase().logIn(
-                            email: email,
-                            password: password,
-                          );
-
-                          final user = AuthService.firebase().currentUser;
-
-                          if (user?.isEmailVerified ?? false) {
-                            if (context.mounted) {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                notesRoute,
-                                (route) => false,
-                              );
-                            }
-                          } else {
-                            if (context.mounted) {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                verifyEmailRoute,
-                                (route) => false,
-                              );
-                            }
-                          }
-                        } on UserNotFoundAuthException {
+                  ElevatedButton(
+                    onPressed: () async {
+                      final email = _emailController.text;
+                      final password = _passwordController.text;
+                      try {
+                        await AuthService.firebase().logIn(
+                          email: email,
+                          password: password,
+                        );
+                  
+                        final user = AuthService.firebase().currentUser;
+                  
+                        if (user?.isEmailVerified ?? false) {
                           if (context.mounted) {
-                            showErrorDialog(
-                              context,
-                              'User Not Found. Try creating an account first.',
+                            // user's email is verified
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              notesRoute,
+                              (route) => false,
                             );
                           }
-                        } on WrongPasswordAuthException {
+                        } else {
                           if (context.mounted) {
-                            showErrorDialog(
-                              context,
-                              'Wrong Credentials.',
-                            );
-                          }
-                        } on GenericAuthException {
-                          if (context.mounted) {
-                            showErrorDialog(
-                              context,
-                              'Authentication error.',
+                            // user's email is NOT verified
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              verifyEmailRoute,
+                              (route) => false,
                             );
                           }
                         }
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          'Login',
-                        ),
+                      } on UserNotFoundAuthException {
+                        if (context.mounted) {
+                          await showErrorDialog(
+                            context,
+                            'User Not Found.',
+                          );
+                        }
+                      } on WrongPasswordAuthException {
+                        if (context.mounted) {
+                          await showErrorDialog(
+                            context,
+                            'Wrong Credentials.',
+                          );
+                        }
+                      } on GenericAuthException catch (e) {
+                        devtools.log('ERROR : $e');
+                        if (context.mounted) {
+                          await showErrorDialog(
+                            context,
+                            'Authentication error.',
+                          );
+                        }
+                      }
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        'Login',
                       ),
                     ),
                   ),
@@ -139,16 +135,10 @@ class _LoginViewState extends State<LoginView> {
                       Navigator.of(context).pushNamedAndRemoveUntil(
                           registerRoute, (route) => false);
                     },
-                    child: const Text('Not registered yet? Register now!'),
-                  )
-                ],
-              );
-
-            default:
-              return const Text("Loading...");
-          }
-        },
-      ),
+                    child: const Text('Not registered yet? Register here!'),
+                  ),
+                ]
+              )
     );
   }
-}
+}      

@@ -6,15 +6,15 @@ import 'package:mynotes/views/notes_view.dart';
 import 'package:mynotes/views/register_view.dart';
 import 'package:mynotes/views/verify_email_view.dart';
 
+
 void main() {
   WidgetsFlutterBinding
       .ensureInitialized(); // confirms firebase is started b4 evth else
 
   runApp(MaterialApp(
-    title: 'Flutter Demo',
+    title: 'MyNotes',
     theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-      useMaterial3: true,
+      primarySwatch: Colors.blue,
     ),
     home: const HomePage(),
     routes: {
@@ -39,7 +39,7 @@ class HomePage extends StatelessWidget {
             final user = AuthService.firebase().currentUser;
             if (user != null) {
               if (user.isEmailVerified) {
-                return const LoginView();
+                return const NotesView();
               } else {
                 return const VerifyEmailView();
               }
