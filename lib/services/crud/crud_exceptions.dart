@@ -6,6 +6,8 @@ class DatabaseNotOpenException implements Exception {}
 
 class CouldNotDeleteUserException implements Exception {}
 
+class CouldNotCreateUserException implements Exception {}
+
 class UserAlreadyExistsException implements Exception {}
 
 class UserNotFoundException implements Exception {}

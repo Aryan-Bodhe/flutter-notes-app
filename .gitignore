@@ -10,6 +10,7 @@
 .svn/
 migrate_working_dir/
 lib/views/success_view.dart
+.vscode/
 
 # IntelliJ related
 *.iml
