@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/enums/menu_action.dart';
@@ -14,14 +12,12 @@ class NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<NotesView> {
-
   late final NotesService _notesService;
   String get userEmail => AuthService.firebase().currentUser!.email!;
 
   @override
   void initState() {
     _notesService = NotesService();
-    _notesService.open();
     super.initState();
   }
 
@@ -37,7 +33,16 @@ class _NotesViewState extends State<NotesView> {
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text('Notes'),
-        actions: [          
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).pushNamed(newNoteRoute);
+            },
+            icon: const Icon(
+              Icons.add,
+              color: Colors.black,
+            ),
+          ),
           PopupMenuButton<MenuActions>(
             onSelected: (value) async {
               switch (value) {
@@ -46,12 +51,13 @@ class _NotesViewState extends State<NotesView> {
                   if (shouldLogout) {
                     await AuthService.firebase().logOut();
                     if (context.mounted) {
-                      Navigator.of(context)
-                          .pushNamedAndRemoveUntil(loginRoute, (route) => false);
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                          loginRoute, (route) => false);
                     }
                   }
               }
             },
+            iconColor: Colors.black,
             itemBuilder: (context) {
               return const [
                 PopupMenuItem(value: MenuActions.logout, child: Text('Logout'))
@@ -60,24 +66,30 @@ class _NotesViewState extends State<NotesView> {
           )
         ],
       ),
-
-      // ignore: deprecated_member_use
-      body:FutureBuilder(
-        future: _notesService.getOrCreateUser(email: userEmail), 
+      body: FutureBuilder(
+        future: _notesService.getOrCreateUser(email: userEmail),
         builder: (context, snapshot) {
-          switch(snapshot.connectionState) {          
+          switch (snapshot.connectionState) {
             case ConnectionState.done:
-              return StreamBuilder(stream: _notesService.allNotes, builder: (context, snapshot) {
-                switch(snapshot.connectionState) {                             
-                  case ConnectionState.waiting:
-                    return const Text('Waiting for all notes...');
-                  default:
-                  return const CircularProgressIndicator();
-                }
-              } ,);
-            
+              return StreamBuilder(
+                stream: _notesService.allNotes,
+                builder: (context, snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                    case ConnectionState.active:
+                      return const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                            "It's quite empty around here, why not create your first note?"),
+                      );
+                    default:
+                      return const CircularProgressIndicator();
+                  }
+                },
+              );
+
             default:
-            return const CircularProgressIndicator();
+              return const CircularProgressIndicator();
           }
         },
       ),
