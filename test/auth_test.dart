@@ -130,7 +130,6 @@ class MockAuthProvider implements AuthProvider {
   @override
   AuthUser? get currentUser => _user;
 
-  @override
   Future<void> initialise() async {
     await Future.delayed(const Duration(seconds: 1));
     _isInitialised = true;
@@ -162,5 +161,11 @@ class MockAuthProvider implements AuthProvider {
     if (user == null) throw UserNotFoundAuthException();
     const newUser = AuthUser(isEmailVerified: true, email: 'someone@bar.com');
     _user = newUser;
+  }
+  
+  @override
+  Future<void> initialize() {
+    
+    throw UnimplementedError();
   }
 }

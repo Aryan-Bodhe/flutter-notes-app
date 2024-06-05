@@ -2,131 +2,119 @@ import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
-import 'package:mynotes/utilities/show_error_dialog.dart';
+import 'package:mynotes/utilities/dialogs/error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
 
   @override
-  State<RegisterView> createState() => _RegisterViewState();
+  _RegisterViewState createState() => _RegisterViewState();
 }
 
 class _RegisterViewState extends State<RegisterView> {
-  late final TextEditingController emailController;
-  late final TextEditingController passwordController;
+  late final TextEditingController _email;
+  late final TextEditingController _password;
 
   @override
   void initState() {
-    emailController = TextEditingController();
-    passwordController = TextEditingController();
+    _email = TextEditingController();
+    _password = TextEditingController();
     super.initState();
   }
 
   @override
   void dispose() {
-    emailController.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.blue,
-          title: const Text('Register'),
-        ),
-        // initialise firebase
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              TextField(
-                controller: emailController,
-                autocorrect: false,
-                enableSuggestions: false,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: 'Enter email here.',
-                ),
+      appBar: AppBar(
+        title: const Text('Register'),
+        backgroundColor: Colors.blue,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _email,
+              enableSuggestions: false,
+              autocorrect: false,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                hintText: 'Enter your email here',
               ),
-              //
-              // Textfield for password
-              //
-              TextField(
-                decoration: const InputDecoration(
-                  hintText: 'Enter password here.',
-                ),
-                obscureText: true,
-                autocorrect: false,
-                enableSuggestions: false,
-                controller: passwordController,
+            ),
+            TextField(
+              controller: _password,
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                hintText: 'Enter your password here',
               ),
-
-              // registering button
-
-              ElevatedButton(
-                onPressed: () async {
-                  final email = emailController.text;
-                  final password = passwordController.text;
-
-                  try {
-                    await AuthService.firebase().createUser(
-                      email: email,
-                      password: password,
-                    );
-                    AuthService.firebase().sendEmailVerification();
-                    if (context.mounted) {
-                      Navigator.of(context).pushNamed(verifyEmailRoute);
-                    }
-                  } on WeakPasswordAuthException {
-                    if (context.mounted) {
-                      await showErrorDialog(
-                        context,
-                        'Weak Password. Password must be minimum 6 characters long.',
-                      );
-                    }
-                  } on EmailAlreadyInUseAuthException {
-                    if (context.mounted) {
-                      await showErrorDialog(
-                        context,
-                        'Email is already in use.',
-                      );
-                    }
-                  } on InvalidEmailAuthException {
-                    if (context.mounted) {
-                      await showErrorDialog(
-                        context,
-                        'Email address is invalid.',
-                      );
-                    }
-                  } on GenericAuthException {
-                    if (context.mounted) {
-                      showErrorDialog(
-                        context,
-                        'Registration failed. Please try again.',
-                      );
-                    }
-                  }
-                },
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'Register',
-                  ),
-                ),
-              ),
-
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    loginRoute,
-                    (route) => false,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final email = _email.text;
+                final password = _password.text;
+                try {
+                  await AuthService.firebase().createUser(
+                    email: email,
+                    password: password,
                   );
-                },
-                child: const Text('Already registered? Login here!'),
-              )
-            ],
-          ),
-        ));
+                  AuthService.firebase().sendEmailVerification();
+                  if (context.mounted) {
+                    Navigator.of(context).pushNamed(verifyEmailRoute);
+                  }
+                } on WeakPasswordAuthException {
+                  if (context.mounted) {
+                    await showErrorDialog(
+                      context,
+                      'Weak password',
+                    );
+                  }
+                } on EmailAlreadyInUseAuthException {
+                  if (context.mounted) {
+                    await showErrorDialog(
+                      context,
+                      'Email is already in use',
+                    );
+                  }
+                } on InvalidEmailAuthException {
+                  if (context.mounted) {
+                    await showErrorDialog(
+                      context,
+                      'This is an invalid email address',
+                    );
+                  }
+                } on GenericAuthException {
+                  if (context.mounted) {
+                    await showErrorDialog(
+                      context,
+                      'Failed to register',
+                    );
+                  }
+                }
+              },
+              child: const Text('Register'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  loginRoute,
+                  (route) => false,
+                );
+              },
+              child: const Text('Already registered? Login here!'),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }

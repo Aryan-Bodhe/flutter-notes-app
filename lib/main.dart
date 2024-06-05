@@ -7,25 +7,31 @@ import 'package:mynotes/views/notes/notes_view.dart';
 import 'package:mynotes/views/register_view.dart';
 import 'package:mynotes/views/verify_email_view.dart';
 
-
 void main() {
-  WidgetsFlutterBinding
-      .ensureInitialized(); // confirms firebase is started b4 evth else
-
-  runApp(MaterialApp(
-    title: 'MyNotes',
-    theme: ThemeData(
-      primarySwatch: Colors.blue,
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        appBarTheme: const AppBarTheme(backgroundColor: Colors.blue),
+        elevatedButtonTheme: const ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(Colors.blue),
+            foregroundColor: WidgetStatePropertyAll(Colors.black),
+          ),
+        ),
+      ),
+      home: const HomePage(),
+      routes: {
+        loginRoute: (context) => const LoginView(),
+        registerRoute: (context) => const RegisterView(),
+        notesRoute: (context) => const NotesView(),
+        verifyEmailRoute: (context) => const VerifyEmailView(),
+        newNoteRoute: (context) => const NewNoteView(),
+      },
     ),
-    home: const HomePage(),
-    routes: {
-      loginRoute: (context) => const LoginView(),
-      registerRoute: (context) => const RegisterView(),
-      notesRoute: (context) => const NotesView(),
-      verifyEmailRoute:(context) => const VerifyEmailView(),
-      newNoteRoute:(context) => const NewNoteView(),
-    },
-  ));
+  );
 }
 
 class HomePage extends StatelessWidget {
@@ -34,7 +40,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: AuthService.firebase().initialise(),
+      future: AuthService.firebase().initialize(),
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
@@ -46,9 +52,8 @@ class HomePage extends StatelessWidget {
                 return const VerifyEmailView();
               }
             } else {
-              return const RegisterView();
+              return const LoginView();
             }
-
           default:
             return const CircularProgressIndicator();
         }
@@ -56,4 +61,3 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-

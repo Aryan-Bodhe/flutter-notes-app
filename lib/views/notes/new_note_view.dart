@@ -6,7 +6,7 @@ class NewNoteView extends StatefulWidget {
   const NewNoteView({super.key});
 
   @override
-  State<NewNoteView> createState() => _NewNoteViewState();
+  _NewNoteViewState createState() => _NewNoteViewState();
 }
 
 class _NewNoteViewState extends State<NewNoteView> {
@@ -16,18 +16,9 @@ class _NewNoteViewState extends State<NewNoteView> {
 
   @override
   void initState() {
-    _note = null;
     _notesService = NotesService();
     _textController = TextEditingController();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _deleteNoteIfTextIsEmpty();
-    _saveNoteIfTextNotEmpty();
-    _textController.dispose();
-    super.dispose();
   }
 
   void _textControllerListener() async {
@@ -36,7 +27,10 @@ class _NewNoteViewState extends State<NewNoteView> {
       return;
     }
     final text = _textController.text;
-    await _notesService.updateNote(note: note, text: text);
+    await _notesService.updateNote(
+      note: note,
+      text: text,
+    );
   }
 
   void _setupTextControllerListener() {
@@ -52,7 +46,6 @@ class _NewNoteViewState extends State<NewNoteView> {
     final currentUser = AuthService.firebase().currentUser!;
     final email = currentUser.email!;
     final owner = await _notesService.getUser(email: email);
-    print('owner found');
     return await _notesService.createNote(owner: owner);
   }
 
@@ -66,42 +59,54 @@ class _NewNoteViewState extends State<NewNoteView> {
   void _saveNoteIfTextNotEmpty() async {
     final note = _note;
     final text = _textController.text;
-    if (text.isNotEmpty && note != null) {
-      await _notesService.updateNote(note: note, text: text);
+    if (note != null && text.isNotEmpty) {
+      await _notesService.updateNote(
+        note: note,
+        text: text,
+      );
     }
+  }
+
+  @override
+  void dispose() {
+    _deleteNoteIfTextIsEmpty();
+    _saveNoteIfTextNotEmpty();
+    _textController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text('New Note'),
         backgroundColor: Colors.blue,
-        title: const Text('Create New Note'),
       ),
-      body: FutureBuilder(
-        future: createNewNote(),
-        builder: (context, snapshot) {
-          switch(snapshot.connectionState) {            
-            case ConnectionState.done:      
-            print(snapshot.data)        ;
-              //_note = snapshot.data as DatabaseNote;
-              _setupTextControllerListener();
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: FutureBuilder(
+          future: createNewNote(),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.done:
+                _note = snapshot.data as DatabaseNote;
+                _setupTextControllerListener();
+                return TextField(
                   controller: _textController,
                   keyboardType: TextInputType.multiline,
-                  maxLength: null,
-                  decoration: const InputDecoration(hintText: 'Start typing your note here.'),
-                ),
-              );
-
-            default:
-            return const CircularProgressIndicator();
-          }
-        },
+                  maxLines: null,
+                  decoration: InputDecoration(
+                    hintText: 'Start typing your note...',
+                    fillColor: Colors.amber.shade200,
+                    filled: true,
+                  ),
+                );
+              default:
+                return const CircularProgressIndicator();
+            }
+          },
+        ),
       ),
-      backgroundColor: const Color.fromARGB(176, 234, 208, 174),
     );
   }
 }

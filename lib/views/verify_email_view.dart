@@ -6,60 +6,42 @@ class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
 
   @override
-  State<VerifyEmailView> createState() => _VerifyEmailViewState();
+  _VerifyEmailViewState createState() => _VerifyEmailViewState();
 }
 
 class _VerifyEmailViewState extends State<VerifyEmailView> {
-  final userEmail = AuthService.firebase().currentUser;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Verify email'),
         backgroundColor: Colors.blue,
-        title: const Text('Verify Email Address'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Verification email sent. Please check your provided email ID.',
-                ),
-              ),
+            const Text(
+                "We've sent you an email verification. Please open it to verify your account."),
+            const Text(
+                "If you haven't received a verification email yet, press the button below"),
+            TextButton(
+              onPressed: () async {
+                await AuthService.firebase().sendEmailVerification();
+              },
+              child: const Text('Send email verification'),
             ),
-            Center(
-              child: TextButton(
-                onPressed: () async {                  
-                    await AuthService.firebase().sendEmailVerification();
-                    const snackBar = SnackBar(
-                      content: Text('Verification Email Sent'),
-                    );
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }                  
-                },
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('Not received yet? Resend email.'),
-                ),
-              ),
-            ),
-            Center(
-              child: TextButton(
-                  onPressed: () async {
-                    await AuthService.firebase().logOut();
-                    if (context.mounted) {
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        loginRoute,
-                        (route) => false,
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'Return to Login',
-                  )),
+            TextButton(
+              onPressed: () async {
+                await AuthService.firebase().logOut();
+                if (context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    loginRoute,
+                    (route) => false,
+                  );
+                }
+              },
+              child: const Text('Return to Login'),
             )
           ],
         ),
